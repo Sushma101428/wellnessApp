@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RPM Prototype – Alerts</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <img src="assets/logo.png" alt="App logo" class="logo" />
+      <strong>RPM Prototype</strong>
+    </div>
+    <nav class="header-nav">
+      <a href="dashboard.html">Home</a>
+      <a href="trends.html">Trends</a>
+      <a class="active" href="alerts.html">Alerts</a>
+      <a href="profile.html">Profile</a>
+      <button id="logoutBtn" class="btn-ghost">Log out</button>
+    </nav>
+  </header>
+
+  <main id="alertsRoot" class="container">
+    <section class="card">
+      <div class="row between">
+        <h2>Alerts</h2>
+        <a class="btn-ghost" href="dashboard.html">Home</a>
+      </div>
+      <div id="alertsContent"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/router.js"></script>
+  <script type="module">
+    import { currentUser } from "./js/auth.js";
+    import { getReadings, getAssignments } from "./js/api.js";
+
+    // Alert thresholds (you can adjust to match your rubric)
+    const TH = { systolic:140, diastolic:90, hr:110, glucose:180 };
+
+    function collectAlerts(patientId, reading){
+      const items = [];
+      if (reading.bp_systolic != null && reading.bp_systolic >= TH.systolic)
+        items.push({ patient_id: patientId, date: reading.date, type:"Blood Pressure", metric:"Systolic", value: reading.bp_systolic, msg: `High systolic ${reading.bp_systolic}` });
+      if (reading.bp_diastolic != null && reading.bp_diastolic >= TH.diastolic)
+        items.push({ patient_id: patientId, date: reading.date, type:"Blood Pressure", metric:"Diastolic", value: reading.bp_diastolic, msg: `High diastolic ${reading.bp_diastolic}` });
+      if (reading.hr != null && reading.hr >= TH.hr)
+        items.push({ patient_id: patientId, date: reading.date, type:"Heart Rate", metric:"HR", value: reading.hr, msg: `High heart rate ${reading.hr}` });
+      if (reading.glucose != null && reading.glucose >= TH.glucose)
+        items.push({ patient_id: patientId, date: reading.date, type:"Glucose", metric:"Glucose", value: reading.glucose, msg: `High glucose ${reading.glucose}` });
+      return items;
+    }
+
+    function renderTable(rows){
+      if (!rows.length) return `<p>No active alerts 🎉</p>`;
+      rows.sort((a,b)=> (b.date+a.patient_id).localeCompare(a.date+b.patient_id));
+      return `
+        <div style="overflow:auto">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr>
+                <th align="left">Patient ID</th>
+                <th align="left">Date</th>
+                <th align="left">Type</th>
+                <th align="left">Metric</th>
+                <th align="left">Value</th>
+                <th align="left">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(r=>`
+                <tr>
+                  <td>${r.patient_id}</td>
+                  <td>${r.date}</td>
+                  <td>${r.type}</td>
+                  <td>${r.metric}</td>
+                  <td>${r.value}</td>
+                  <td>
+                    <button class="btn-small" onclick="alert('Follow-up noted for ${r.patient_id} (${r.type})')">Acknowledge</button>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+    (async function init(){
+      const u = currentUser();
+      const root = document.getElementById("alertsContent");
+
+      if (u.role === "patient") {
+        // Patient: show alerts for their own readings
+        const rows = await getReadings(u.id);
+        const alerts = rows.flatMap(r => collectAlerts(u.id, r));
+        root.innerHTML = renderTable(alerts);
+      } else {
+        // Provider: show alerts for all assigned patients (or all patients by default)
+        const patientIds = await getAssignments(u.id);
+        let allAlerts = [];
+        for (const pid of patientIds) {
+          const rows = await getReadings(pid);
+          allAlerts = allAlerts.concat(rows.flatMap(r => collectAlerts(pid, r)));
+        }
+        root.innerHTML = renderTable(allAlerts);
+      }
+    })();
+  </script>
+</body>
+</html>
+
+
+

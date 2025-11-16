@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RPM Prototype – Login</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body class="auth-body">
+  <main class="auth-card">
+    <img src="assets/logo.png" alt="App logo" class="logo-large" />
+    <h1>Sign in</h1>
+
+    <form id="loginForm" aria-label="Login">
+      <label>Role
+        <select name="role" id="roleSel" aria-label="Role">
+          <option value="patient">Patient</option>
+          <option value="provider">Provider</option>
+        </select>
+      </label>
+
+      <div id="patientFields">
+        <label>Patient ID
+          <input name="patient_id" placeholder="e.g., 1001" autocomplete="username" required />
+        </label>
+        <label>Password
+          <input name="patient_password" type="password" placeholder="Your password" required />
+        </label>
+      </div>
+
+      <div id="providerFields" style="display:none">
+        <label>Provider ID
+          <input name="provider_id" placeholder="e.g., P9001" />
+        </label>
+        <label>Password
+          <input name="provider_password" type="password" placeholder="Your password" />
+        </label>
+      </div>
+
+      <button type="submit" class="btn-primary">Sign in</button>
+    </form>
+
+    <p id="createLinks" class="muted small center mt-12">
+      New Patient? <a href="create-account.html">Create account</a>
+    </p>
+
+    <!-- appears after 3 failed attempts -->
+    <p id="forgotRow" class="small center" style="display:none;margin-top:8px">
+      <span class="link" id="forgotLink">Forgot password?</span>
+    </p>
+  </main>
+
+  <!-- Invalid password modal -->
+  <div class="modal-backdrop" id="invalidModal">
+    <div class="modal">
+      <h3>Invalid password</h3>
+      <p>Please check your ID and password and try again.</p>
+      <div class="modal-actions">
+        <button class="btn-primary" id="invalidOk">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot password modal -->
+  <div class="modal-backdrop" id="forgotModal">
+    <div class="modal">
+      <h3>Reset Password</h3>
+      <p>Enter your account email. We’ll send a reset link (demo).</p>
+      <label>Email
+        <input id="fpEmail" type="email" placeholder="you@example.com" />
+      </label>
+      <div class="modal-actions">
+        <button class="btn-ghost" id="fpCancel">Cancel</button>
+        <button class="btn-primary" id="fpSend">Send Link</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { login } from "./js/auth.js";
+    import { validatePatient, validateProvider } from "./js/api.js";
+
+    const roleSel = document.getElementById("roleSel");
+    const patientBox = document.getElementById("patientFields");
+    const providerBox = document.getElementById("providerFields");
+    const links = document.getElementById("createLinks");
+    const forgotRow = document.getElementById("forgotRow");
+    const forgotLink = document.getElementById("forgotLink");
+
+    // modals
+    const invalidModal = document.getElementById("invalidModal");
+    const invalidOk = document.getElementById("invalidOk");
+    const forgotModal = document.getElementById("forgotModal");
+    const fpCancel = document.getElementById("fpCancel");
+    const fpSend = document.getElementById("fpSend");
+    const fpEmail = document.getElementById("fpEmail");
+
+    function openModal(el){ el.style.display="flex"; }
+    function closeModal(el){ el.style.display="none"; }
+
+    function attemptsKey(role){
+      return role === "patient" ? "login_attempts_patient" : "login_attempts_provider";
+    }
+    function getAttempts(role){
+      try{ return Number(localStorage.getItem(attemptsKey(role))||"0"); }catch{ return 0; }
+    }
+    function incAttempts(role){
+      const n = getAttempts(role)+1;
+      localStorage.setItem(attemptsKey(role), String(n));
+      if (n>=3) forgotRow.style.display="block";
+    }
+    function resetAttempts(role){
+      localStorage.removeItem(attemptsKey(role));
+      forgotRow.style.display="none";
+    }
+
+    function toggleRoleUI() {
+      const patient = roleSel.value === "patient";
+      patientBox.style.display  = patient ? "block" : "none";
+      providerBox.style.display = patient ? "none" : "block";
+      patientBox.querySelectorAll("input").forEach(i => i.required = patient);
+      providerBox.querySelectorAll("input").forEach(i => i.required = !patient);
+      links.innerHTML = patient
+        ? 'New Patient? <a href="create-account.html">Create account</a>'
+        : 'New Provider? <a href="create-provider.html">Create provider</a>';
+
+      // restore attempts state
+      const n = getAttempts(patient ? "patient":"provider");
+      forgotRow.style.display = n>=3 ? "block" : "none";
+    }
+    roleSel.addEventListener("change", toggleRoleUI); toggleRoleUI();
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const role = fd.get("role");
+
+      if (role === "patient") {
+        const id = fd.get("patient_id").trim();
+        const pw = fd.get("patient_password");
+        const u = await validatePatient(id, pw);
+        if (!u) { incAttempts("patient"); openModal(invalidModal); return; }
+        resetAttempts("patient");
+        login({ role: "patient", id, name: u.name });
+      } else {
+        const id = fd.get("provider_id").trim();
+        const pw = fd.get("provider_password");
+        const u = await validateProvider(id, pw);
+        if (!u) { incAttempts("provider"); openModal(invalidModal); return; }
+        resetAttempts("provider");
+        login({ role: "provider", id, name: u.name });
+      }
+      location.href = "dashboard.html";
+    });
+
+    invalidOk.addEventListener("click", ()=> closeModal(invalidModal));
+
+    // forgot password flow
+    forgotLink.addEventListener("click", ()=> openModal(forgotModal));
+    fpCancel.addEventListener("click", ()=> closeModal(forgotModal));
+    fpSend.addEventListener("click", ()=>{
+      const email = fpEmail.value.trim();
+      if(!email) return alert("Please enter your email");
+      closeModal(forgotModal);
+      alert(`If an account exists for ${email}, a reset link has been sent (demo).`);
+    });
+  </script>
+</body>
+</html>
+

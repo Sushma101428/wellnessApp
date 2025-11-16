@@ -1,0 +1,7 @@
+[
+    {"patient_id":"1001","name":"Ava Johnson","age":46,"gender":"Female","email":"ava.johnson@example.com","phone":"555-0146","password":"pass1001"},
+    {"patient_id":"1002","name":"Liam Patel","age":53,"gender":"Male","email":"liam.patel@example.com","phone":"555-0192","password":"pass1002"}
+  ]
+  
+  
+  

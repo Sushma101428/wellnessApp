@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Log Symptom – RPM</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <img src="assets/logo.png" alt="App logo" class="logo" />
+      <strong>RPM Prototype</strong>
+    </div>
+    <nav class="header-nav">
+      <a href="dashboard.html">Home</a>
+      <a class="active" href="log-symptom.html">Log Symptom</a>
+      <a href="trends.html">Trends</a>
+      <a href="alerts.html">Alerts</a>
+      <a href="profile.html">Profile</a>
+      <button id="logoutBtn" class="btn-ghost">Log out</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Log Symptom</h2>
+      <form id="symptomForm" class="grid-2">
+        <label>Type <input name="type" placeholder="e.g., Dizziness" required></label>
+        <label>Notes <textarea name="notes" rows="3" placeholder="Describe your symptom..."></textarea></label>
+        <fieldset style="grid-column: span 2">
+          <legend>Severity</legend>
+          <label><input type="radio" name="severity" value="Low" required> Low</label>
+          <label><input type="radio" name="severity" value="Medium"> Medium</label>
+          <label><input type="radio" name="severity" value="High"> High</label>
+        </fieldset>
+      </form>
+      <div class="mt-12">
+        <button id="saveBtn" class="btn-primary">Save</button>
+        <a href="dashboard.html" class="btn-ghost" style="margin-left:8px">Home</a>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/router.js"></script>
+  <script type="module">
+    import { currentUser } from "./js/auth.js";
+    const user=currentUser();
+    document.getElementById("saveBtn").addEventListener("click",()=>{
+      const fd=new FormData(document.getElementById("symptomForm"));
+      const entry=Object.fromEntries(fd.entries());
+      localStorage.setItem(`symptom_${user.id}_${Date.now()}`, JSON.stringify(entry));
+      alert("Symptom saved locally.");
+      location.href="dashboard.html";
+    });
+  </script>
+</body>
+</html>
+
+

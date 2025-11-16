@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Patient Detail – RPM</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <img src="assets/logo.png" alt="App logo" class="logo" />
+      <strong>RPM Prototype</strong>
+    </div>
+    <nav class="header-nav">
+      <a href="dashboard.html">Home</a>
+      <a href="alerts.html">Alerts</a>
+      <a href="profile.html">Profile</a>
+      <button id="logoutBtn" class="btn-ghost">Log out</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="row between">
+        <h2 id="title">Patient Detail</h2>
+        <a class="btn-ghost" href="dashboard.html">Back</a>
+      </div>
+
+      <!-- Trends -->
+      <h3>Trends</h3>
+      <div class="segmented">
+        <button data-metric="bp" class="on">Blood Pressure</button>
+        <button data-metric="hr">Heart Rate</button>
+        <button data-metric="glucose">Glucose</button>
+        <button data-metric="steps">Steps</button>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="trendChart" width="880" height="420" aria-label="Trend chart" role="img"></canvas>
+      </div>
+    </section>
+
+    <section class="card mt-12">
+      <h3>Symptom Logs</h3>
+      <div id="symptomList"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="js/router.js"></script>
+  <script type="module" src="js/charts.js"></script>
+  <script type="module">
+    import { getSymptoms, fetchJSON } from "./js/api.js";
+
+    function getPid(){
+      const url = new URL(location.href);
+      return url.searchParams.get("pid");
+    }
+
+    (async function init(){
+      const pid = getPid();
+      document.getElementById("title").textContent = `Patient Detail – ${pid}`;
+
+      // symptom logs
+      const logs = getSymptoms(pid);
+      const root = document.getElementById("symptomList");
+      if (!logs.length){
+        root.innerHTML = `<p class="muted">No symptom logs.</p>`;
+      } else {
+        root.innerHTML = `
+          <ul class="list">
+            ${logs.map(l=>`
+              <li class="list-item">
+                <div>
+                  <strong>${l.type || "Symptom"}</strong>
+                  <div class="small muted">${l.severity ? `Severity: ${l.severity}` : ""}</div>
+                  ${l.notes ? `<div>${l.notes}</div>` : ""}
+                </div>
+              </li>`).join("")}
+          </ul>`;
+      }
+    })();
+  </script>
+</body>
+</html>

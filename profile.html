@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RPM Prototype – Profile</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <img src="assets/logo.png" alt="App logo" class="logo" />
+      <strong>RPM Prototype</strong>
+    </div>
+    <nav class="header-nav">
+      <a href="dashboard.html">Home</a>
+      <a href="trends.html">Trends</a>
+      <a href="alerts.html">Alerts</a>
+      <a class="active" href="profile.html">Profile</a>
+      <button id="logoutBtn" class="btn-ghost">Log out</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="row between">
+        <h2>Profile</h2>
+        <a class="btn-ghost" href="dashboard.html">Home</a>
+      </div>
+
+      <form id="profileForm" class="grid-2"></form>
+      <div class="mt-12">
+        <button id="saveBtn" class="btn-primary">Save</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/router.js"></script>
+  <script type="module">
+    import { currentUser } from "./js/auth.js";
+    import { getPatientProfile, getProviderProfile, saveProfile } from "./js/api.js";
+
+    function render(form, fields, data){
+      form.innerHTML = fields.map(f=>`
+        <label>${f.label}
+          <input name="${f.key}" value="${data?.[f.key] ?? ""}" ${f.readonly?"readonly":""} ${f.type?`type="${f.type}"`:""} />
+        </label>`).join("");
+    }
+
+    (async function init(){
+      const u=currentUser();
+      const form=document.getElementById("profileForm");
+
+      if(u.role==="patient"){
+        const data = await getPatientProfile(u.id);
+        render(form, [
+          {label:"Patient ID", key:"patient_id", readonly:true},
+          {label:"Name", key:"name"},
+          {label:"Email", key:"email"},
+          {label:"Age", key:"age"},
+          {label:"Gender",key:"gender"},
+          {label:"Phone", key:"phone"}
+        ], data);
+      } else {
+        const data = await getProviderProfile(u.id);
+        render(form, [
+          {label:"Provider ID", key:"provider_id", readonly:true},
+          {label:"Name", key:"name"},
+          {label:"Email", key:"email"},
+          {label:"Age", key:"age"},
+          {label:"Gender",key:"gender"},
+          {label:"Phone", key:"phone"}
+        ], data);
+      }
+
+      document.getElementById("saveBtn").addEventListener("click", ()=>{
+        const fd=new FormData(form); const obj=Object.fromEntries(fd.entries());
+        const u=currentUser();
+        saveProfile(u.role, u.id, obj);
+        alert("Saved locally");
+      });
+    })();
+  </script>
+</body>
+</html>
+
+
+
+

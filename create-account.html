@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Create Patient – RPM</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body class="auth-body">
+  <main class="auth-card">
+    <img src="assets/logo.png" alt="App logo" class="logo-large" />
+    <h1>Create Patient Account</h1>
+
+    <form id="createForm">
+      <label>Patient ID <input name="patient_id" required></label>
+      <label>First Name <input name="first_name" required></label>
+      <label>Last Name <input name="last_name" required></label>
+      <label>Email <input type="email" name="email" required></label>
+      <label>Age <input age="number" required></label>
+      <label>Gender <input name="gender" required></label>
+      <label>Password <input type="password" name="password" required></label>
+      <label>Confirm Password <input type="password" name="confirm" required></label>
+      <button type="submit" class="btn-primary">Create</button>
+    </form>
+
+    <p class="muted small center mt-12">
+      Already have an account? <a href="index.html">Login</a>
+    </p>
+  </main>
+
+  <script type="module">
+    import { seedDemoReadings } from "./js/api.js";
+
+    document.getElementById("createForm").addEventListener("submit", e=>{
+      e.preventDefault();
+      const fd=new FormData(e.target);
+      if(fd.get("password")!==fd.get("confirm")) return alert("Passwords do not match");
+
+      const id=fd.get("patient_id").trim();
+      const rec={
+        patient_id:id,
+        name:`${fd.get("first_name")} ${fd.get("last_name")}`,
+        email:fd.get("email"),
+        password:fd.get("password")
+      };
+      localStorage.setItem(`patient_${id}`, JSON.stringify(rec));
+
+      // Seed sample readings so KPIs & Trends show immediately
+      seedDemoReadings(id);
+
+      alert("Patient created! You can now log in.");
+      location.href="index.html";
+    });
+  </script>
+</body>
+</html>

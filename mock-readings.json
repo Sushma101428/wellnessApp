@@ -1,0 +1,10 @@
+[
+    {"patient_id":"1001","date":"2025-10-18","bp_systolic":130,"bp_diastolic":83,"hr":79,"glucose":118,"steps":5320},
+    {"patient_id":"1001","date":"2025-10-17","bp_systolic":141,"bp_diastolic":92,"hr":86,"glucose":184,"steps":8123},
+    {"patient_id":"1001","date":"2025-10-16","bp_systolic":126,"bp_diastolic":80,"hr":76,"glucose":111,"steps":7021},
+  
+    {"patient_id":"1002","date":"2025-10-18","bp_systolic":119,"bp_diastolic":77,"hr":72,"glucose":96,"steps":4050},
+    {"patient_id":"1002","date":"2025-10-17","bp_systolic":122,"bp_diastolic":79,"hr":75,"glucose":101,"steps":6120}
+  ]
+  
+  
