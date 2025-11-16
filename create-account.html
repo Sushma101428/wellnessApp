@@ -4,11 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Create Patient – RPM</title>
-  <link rel="stylesheet" href="./assets/styles.css" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body class="auth-body">
   <main class="auth-card">
-    <img src="./assets/logo.png" alt="App logo" class="logo-large" />
+    <img src="./logo.png" alt="App logo" class="logo-large" />
     <h1>Create Patient Account</h1>
 
     <form id="createForm">
@@ -29,7 +29,7 @@
   </main>
 
   <script type="module">
-    import { seedDemoReadings } from "./js/api.js";
+    import { seedDemoReadings } from "./api.js";
 
     document.getElementById("createForm").addEventListener("submit", e=>{
       e.preventDefault();
@@ -54,4 +54,5 @@
   </script>
 </body>
 </html>
+
 
