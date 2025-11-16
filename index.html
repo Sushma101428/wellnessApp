@@ -4,11 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>RPM Prototype – Login</title>
-  <link rel="stylesheet" href="./assets/styles.css" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body class="auth-body">
   <main class="auth-card">
-    <img src="./assets/logo.png" alt="App logo" class="logo-large" />
+    <img src="./logo.png" alt="App logo" class="logo-large" />
     <h1>Sign in</h1>
 
     <form id="loginForm" aria-label="Login">
@@ -77,8 +77,8 @@
   </div>
 
   <script type="module">
-    import { login } from "./js/auth.js";
-    import { validatePatient, validateProvider } from "./js/api.js";
+    import { login } from "./auth.js";
+    import { validatePatient, validateProvider } from "./api.js";
 
     const roleSel = document.getElementById("roleSel");
     const patientBox = document.getElementById("patientFields");
@@ -167,5 +167,6 @@
   </script>
 </body>
 </html>
+
 
 
