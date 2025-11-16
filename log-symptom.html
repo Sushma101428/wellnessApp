@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Log Symptom – RPM</title>
-  <link rel="stylesheet" href="./assets/styles.css" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <header class="app-header">
     <div class="header-left">
-      <img src="./assets/logo.png" alt="App logo" class="logo" />
+      <img src="./logo.png" alt="App logo" class="logo" />
       <strong>RPM Prototype</strong>
     </div>
     <nav class="header-nav">
@@ -42,9 +42,9 @@
     </section>
   </main>
 
-  <script type="module" src="./js/router.js"></script>
+  <script type="module" src="./router.js"></script>
   <script type="module">
-    import { currentUser } from "./js/auth.js";
+    import { currentUser } from "./auth.js";
     const user=currentUser();
     document.getElementById("saveBtn").addEventListener("click",()=>{
       const fd=new FormData(document.getElementById("symptomForm"));
@@ -56,6 +56,7 @@
   </script>
 </body>
 </html>
+
 
 
 
